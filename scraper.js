@@ -12,6 +12,7 @@ const SELECTOR =
 async function scraper(readDate) {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
+
   const meterDate = readDate;
 
   try {
@@ -78,14 +79,16 @@ async function scraper(readDate) {
 
       // let newDate = moment(testDate, FORMAT);
       // data[0] = moment(readDate + " " + row[0], FORMAT).subtract(5, "h");
-      data[0] = readDate;
+      data[0] = moment(readDate, "MM/DD/YYYY").format("YYYY-MM-DD");
       data[1] = readDate + " " + row[0];
       data[2] = readDate + " " + row[1];
-      data[3] = moment(readDate + " " + row[0], FORMAT).subtract(5, "h");
+      data[3] = moment(readDate + " " + row[0], FORMAT)
+        .subtract(5, "h")
+        .format(FORMAT);
       data[4] = parseFloat(row[2]);
       formattedData.push(data);
     });
-    console.log(formattedData);
+    // console.log(formattedData);
     await browser.close();
     return formattedData;
   } catch (e) {

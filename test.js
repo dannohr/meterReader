@@ -5,9 +5,9 @@ const moment = require("moment");
 
 const importMeterData = async readDate => {
   let intervalData = await scraper(readDate);
-  //   console.log(intervalData);
-
   intervalData.forEach(row => {
+    // console.log(row[0]);
+
     db.Interval.create({
       meterDate: row[0],
       start: row[1],
@@ -15,21 +15,14 @@ const importMeterData = async readDate => {
       startDateTime: row[3],
       consumption: row[4]
     })
-      //   .then(entry => console.log(entry.dataValues))
+      //   .then(error => console.log(error.dataValues))
       .catch(error => console.log(error));
   });
-
-  //   return await scraper("06/27/2019");
 };
 
-let startDate = new Date("04/01/2019");
-let endDate = moment(new Date()).format("MM/DD/YYYY");
-let readDate = moment(startDate).format("MM/DD/YYYY");
-// console.log(startDate);
-// console.log(readDate);
-// console.log(endDate);
-
-let i = 0;
+// let startDate = new Date("04/01/2019");
+// let endDate = moment(new Date()).format("MM/DD/YYYY");
+// let readDate = moment(startDate).format("MM/DD/YYYY");
 
 async function copyData() {
   let lastDataDate = await db.Interval.max("startDateTime").then(max => {
@@ -39,32 +32,29 @@ async function copyData() {
   let startDate = moment(lastDataDate)
     .add(1, "d")
     .format("MM/DD/YYYY");
-  //   let startDate = moment("05/17/2019", "MM/DD/YYYY").format("MM/DD/YYYY");
 
-  //   let endDate = moment("06/30/2019", "MM/DD/YYYY").format("MM/DD/YYYY");
-  let endDate = moment().format("MM/DD/YYYY");
+  console.log("Max date in database is", lastDataDate);
 
-  let readDate = moment(startDate, "MM/DD/YYYY").format("MM/DD/YYYY");
-  // console.log(startDate);
-  console.log("Starting Date is: ", readDate);
+  let endDate = moment("06/14/2019", "MM/DD/YYYY").format("MM/DD/YYYY");
+  //   let endDate = moment().format("MM/DD/YYYY");
+
+  console.log("Starting Date is: ", startDate);
   console.log("Ending Date is: ", endDate);
 
-  while (readDate != endDate) {
-    console.log("Getting Data for ", readDate);
-    try {
-      await importMeterData(readDate);
-    } catch (err) {
-      console.log(err);
-    }
-    readDate = moment(readDate, "MM/DD/YYYY")
-      .add(1, "d")
-      .format("MM/DD/YYYY");
-  }
+  //   while (startDate != endDate) {
+  //     console.log("Getting Data for ", startDate);
+  //     try {
+  //       await importMeterData(startDate);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //     startDate = moment(startDate, "MM/DD/YYYY")
+  //       .add(1, "d")
+  //       .format("MM/DD/YYYY");
+  //   }
+  importMeterData(startDate);
 }
 
-// setInterval(() => {
-//   copyData();
-// }, 5000);
-// copyData();
+copyData();
 
-importMeterData("06/01/2019");
+// importMeterData("06/01/2019");
