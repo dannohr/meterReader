@@ -1,0 +1,28 @@
+{
+  "name": "meterreader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dannohr/meterReader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dannohr/meterReader/issues"
+  },
+  "homepage": "https://github.com/dannohr/meterReader#readme",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "moment": "^2.24.0",
+    "mssql": "^5.1.0",
+    "puppeteer": "^1.18.1",
+    "sequelize": "^5.9.0",
+    "sequelize-cli": "^5.5.0"
+  }
+}
