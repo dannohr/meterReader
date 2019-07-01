@@ -10,7 +10,7 @@ const SELECTOR =
 // let readDate = "06/27/2019";
 
 async function scraper(readDate) {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
 
   const meterDate = readDate;
