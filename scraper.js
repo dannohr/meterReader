@@ -5,9 +5,7 @@ const METER_READER =
   "https://www.smartmetertexas.com/smt/tPartyAgreementsLogin/public/smt_login.jsp";
 
 const SELECTOR =
-  "#td_print_end > table > tbody > tr:nth-child(5) > td > span > table";
-
-// let readDate = "06/27/2019";
+  "#td_print_end > table > tbody > tr:nth-child(5) > td > span > table tr";
 
 async function scraper(readDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
@@ -18,24 +16,57 @@ async function scraper(readDate) {
   try {
     await page.goto(METER_READER, { waitUntil: "networkidle2" });
 
-    await page.type("#username", process.env.WUSERNAME);
-    // .then(console.log("entered username"));
-    await page.type("#txtPassword", process.env.WTXTPASSWORD);
-    // .then(console.log("entered password"));
+    try {
+      await page.type("#username", process.env.WUSERNAME);
+      // .then(console.log("entered username"));
+    } catch (err) {
+      console.log(err);
+      await browser.close();
+      return;
+    }
+
+    try {
+      await page.type("#txtPassword", process.env.WTXTPASSWORD);
+      // .then(console.log("entered password"));
+    } catch (err) {
+      console.log(err);
+      await browser.close();
+      return;
+    }
 
     await page.keyboard.press("Enter"); //.then(console.log("pressed enter"));
 
     await page.waitForNavigation({ waitUntil: "networkidle0" });
     // .then(console.log("waited"));
 
-    await page.select(' select[name="reportType"] ', "INTERVAL");
-    // .then(console.log("selected ReportType"));
+    try {
+      await page.select(' select[name="reportType"] ', "INTERVAL");
+      // .then(console.log("selected ReportType"));
+    } catch (err) {
+      console.log(err);
+      await browser.close();
+      return;
+    }
 
-    await page.waitForSelector(' select[name="reportType"] ');
-    // .then(console.log("waited for selector"));
+    try {
+      await page.waitForSelector(' select[name="reportType"] ');
+      // .then(console.log("waited for selector"));
+    } catch (err) {
+      console.log(err);
+      await browser.close();
+      return;
+    }
 
-    await page.click(" input[name='viewUsage_startDate'] ", { clickCount: 3 });
-    // .then(console.log("clicked start date"));
+    try {
+      await page.click(" input[name='viewUsage_startDate'] ", {
+        clickCount: 3
+      });
+      // .then(console.log("clicked start date"));
+    } catch (err) {
+      console.log(err);
+      await browser.close();
+      return;
+    }
 
     await page.keyboard.press("Backspace");
 
@@ -49,26 +80,24 @@ async function scraper(readDate) {
 
     await page.waitFor(4000); //.then(console.log("Is it showing"));
 
-    // const meterData = [];
-
     const newMeterData = await page.evaluate(meterDate => {
       let results = [];
-      // let resultsMore = [];
+      const SELECTOR =
+        "#td_print_end > table > tbody > tr:nth-child(5) > td > span > table tr";
+      let rowNodeList = document.querySelectorAll(SELECTOR);
 
-      const rowNodeList = document.querySelectorAll(
-        "#td_print_end > table > tbody > tr:nth-child(5) > td > span > table tr"
-      );
+      let tds = Array.from(rowNodeList);
 
-      const tds = Array.from(rowNodeList);
+      if (tds) {
+        tds.forEach(row => {
+          let rowData = row.innerText.split("\t");
+          if (rowData[0].length === 8) {
+            results.push(rowData);
+          }
+        });
 
-      tds.forEach(row => {
-        let rowData = row.innerText.split("\t");
-        if (rowData[0].length === 8) {
-          results.push(rowData);
-        }
-      });
-
-      return results;
+        return results;
+      }
     });
 
     let formattedData = [];
@@ -77,8 +106,6 @@ async function scraper(readDate) {
       const FORMAT = "MM/DD/YYYY hh:mm a";
       let data = [];
 
-      // let newDate = moment(testDate, FORMAT);
-      // data[0] = moment(readDate + " " + row[0], FORMAT).subtract(5, "h");
       data[0] = moment(readDate, "MM/DD/YYYY").format("YYYY-MM-DD");
       data[1] = readDate + " " + row[0];
       data[2] = readDate + " " + row[1];
@@ -88,11 +115,13 @@ async function scraper(readDate) {
       data[4] = parseFloat(row[2]);
       formattedData.push(data);
     });
-    // console.log(formattedData);
+
     await browser.close();
     return formattedData;
   } catch (e) {
     console.log(e);
+    await browser.close();
+    return;
   }
 }
 

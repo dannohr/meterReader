@@ -5,19 +5,24 @@ const moment = require("moment");
 
 const importMeterData = async readDate => {
   let intervalData = await scraper(readDate);
-  intervalData.forEach(row => {
-    // console.log(row[0]);
 
-    db.Interval.create({
-      meterDate: row[0],
-      start: row[1],
-      end: row[2],
-      startDateTime: row[3],
-      consumption: row[4]
-    })
-      //   .then(error => console.log(error.dataValues))
-      .catch(error => console.log(error));
-  });
+  if (intervalData) {
+    intervalData.forEach(row => {
+      // console.log(row[0]);
+
+      db.Interval.create({
+        meterDate: row[0],
+        start: row[1],
+        end: row[2],
+        startDateTime: row[3],
+        consumption: row[4]
+      })
+        //   .then(error => console.log(error.dataValues))
+        .catch(error => console.log(error));
+    });
+  } else {
+    console.log("No data to copy");
+  }
 };
 
 // let startDate = new Date("04/01/2019");
