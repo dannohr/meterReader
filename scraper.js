@@ -1,19 +1,16 @@
 const puppeteer = require("puppeteer");
 const moment = require("moment");
 
-const METER_READER =
-  "https://www.smartmetertexas.com/smt/tPartyAgreementsLogin/public/smt_login.jsp";
+const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
 
-const SELECTOR =
-  "#td_print_end > table > tbody > tr:nth-child(5) > td > span > table tr";
-
-async function scraper(readDate) {
+async function scrapeInterval(readDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
 
   const meterDate = readDate;
 
   try {
+    page.setDefaultNavigationTimeout(90000);
     await page.goto(METER_READER, { waitUntil: "networkidle2" });
 
     try {
@@ -125,4 +122,4 @@ async function scraper(readDate) {
   }
 }
 
-module.exports = scraper;
+module.exports = scrapeInterval;

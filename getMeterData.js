@@ -1,33 +1,27 @@
 require("dotenv").config();
-const scraper = require("./scraper");
+const scrapeInterval = require("./scraper");
 const db = require("./models/index");
 const moment = require("moment");
 
 const importMeterData = async readDate => {
-  let intervalData = await scraper(readDate);
+  let intervalData = await scrapeInterval(readDate);
+
+  //if puppetterr messes up on the webpage, which seems to randomly happen, no data will be returned.
 
   if (intervalData) {
     intervalData.forEach(row => {
-      // console.log(row[0]);
-
       db.Interval.create({
         meterDate: row[0],
         start: row[1],
         end: row[2],
         startDateTime: row[3],
         consumption: row[4]
-      })
-        //   .then(error => console.log(error.dataValues))
-        .catch(error => console.log(error));
+      }).catch(error => console.log(error));
     });
   } else {
     console.log("No data to copy");
   }
 };
-
-// let startDate = new Date("04/01/2019");
-// let endDate = moment(new Date()).format("MM/DD/YYYY");
-// let readDate = moment(startDate).format("MM/DD/YYYY");
 
 async function copyData() {
   let lastDataDate = await db.Interval.max("startDateTime").then(max => {
@@ -38,13 +32,17 @@ async function copyData() {
     .add(1, "d")
     .format("MM/DD/YYYY");
 
+  let startTime = moment(lastDataDate)
+    .add(5, "h")
+    .format("LT");
+
   console.log("Max date in database is", lastDataDate);
 
   let endDate = moment("06/14/2019", "MM/DD/YYYY").format("MM/DD/YYYY");
   //   let endDate = moment().format("MM/DD/YYYY");
 
   console.log("Starting Date is: ", startDate);
-  console.log("Ending Date is: ", endDate);
+  console.log("Starting Time is ", startTime);
 
   //   while (startDate != endDate) {
   //     console.log("Getting Data for ", startDate);
