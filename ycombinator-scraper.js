@@ -1,4 +1,5 @@
 // from https://www.toptal.com/puppeteer/headless-browser-puppeteer-tutorial
+// example
 
 const puppeteer = require("puppeteer");
 function run() {
