@@ -1,12 +1,10 @@
 require("dotenv").config();
-// const scrapeInterval = require("./scraper");
 const scrapers = require("./scraper");
 const db = require("./models/index");
 const moment = require("moment");
-// { square, diag }
 
-const importMeterData = async readDate => {
-  let intervalData = await scrapers.scrapeInterval(readDate);
+const importMeterData = async (startDate, endDate) => {
+  let intervalData = await scrapers.scrapeDaily(startDate, endDate);
 
   //if puppetterr messes up on the webpage, which seems to randomly happen, no data will be returned.
 
@@ -26,7 +24,7 @@ const importMeterData = async readDate => {
 };
 
 async function copyData() {
-  let lastDataDate = await db.Interval.max("startDateTime").then(max => {
+  let lastDataDate = await db.Daily.max("meterDate").then(max => {
     return max;
   });
 
@@ -34,17 +32,11 @@ async function copyData() {
     .add(1, "d")
     .format("MM/DD/YYYY");
 
-  let startTime = moment(lastDataDate)
-    .add(5, "h")
-    .format("LT");
+  let endDate = moment().format("MM/DD/YYYY");
 
   console.log("Max date in database is", lastDataDate);
-
-  let endDate = moment("06/14/2019", "MM/DD/YYYY").format("MM/DD/YYYY");
-  //   let endDate = moment().format("MM/DD/YYYY");
-
   console.log("Starting Date is: ", startDate);
-  console.log("Starting Time is ", startTime);
+  console.log("Ending Date is ", endDate);
 
   //   while (startDate != endDate) {
   //     console.log("Getting Data for ", startDate);
@@ -57,7 +49,7 @@ async function copyData() {
   //       .add(1, "d")
   //       .format("MM/DD/YYYY");
   //   }
-  importMeterData(startDate);
+  importMeterData(startDate, endDate);
 }
 
 copyData();
