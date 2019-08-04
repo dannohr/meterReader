@@ -14,7 +14,8 @@ const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
 // };
 
 async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  // const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch({ slowMo: 50 });
   const page = await browser.newPage();
 
   const meterDate = readDate;
