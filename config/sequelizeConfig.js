@@ -1,5 +1,16 @@
 module.exports = {
   development: {
+    username: "apps",
+    password: "Password1",
+    database: "meterReader",
+    host: "192.168.1.100",
+    dialect: "postgres",
+
+    seederStorage: "sequelize",
+    logging: false
+    // logging: console.log
+  },
+  developmentMSSQL: {
     username: "sa",
     password: "Password1",
     database: "meterReader",
