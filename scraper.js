@@ -1,7 +1,8 @@
 const puppeteer = require("puppeteer");
 const moment = require("moment");
+const scraperModules = require("./scrapers/login");
 
-const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
+// const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
 
 // module.exports = {
 //   list(req, res) {
@@ -15,55 +16,19 @@ const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
 
 async function scrapeInterval(readDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
-  // const browser = await puppeteer.launch({ slowMo: 50 });
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(90000);
 
   const meterDate = readDate;
 
   try {
-    page.setDefaultNavigationTimeout(90000);
-    await page.goto(METER_READER, { waitUntil: "networkidle2" });
+    await scraperModules(page).login();
+    await scraperModules(page).selectInterval();
 
-    try {
-      await page.type("#username", process.env.WUSERNAME);
-      // .then(console.log("entered username"));
-    } catch (err) {
-      console.log(err);
-      await browser.close();
-      return;
-    }
-
-    try {
-      await page.type("#txtPassword", process.env.WTXTPASSWORD);
-      // .then(console.log("entered password"));
-    } catch (err) {
-      console.log(err);
-      await browser.close();
-      return;
-    }
-
-    await page.keyboard.press("Enter"); //.then(console.log("pressed enter"));
-
-    await page.waitForNavigation({ waitUntil: "networkidle0" });
-    // .then(console.log("waited"));
-
-    try {
-      await page.select(' select[name="reportType"] ', "INTERVAL");
-      // .then(console.log("selected ReportType"));
-    } catch (err) {
-      console.log(err);
-      await browser.close();
-      return;
-    }
-
-    try {
-      await page.waitForSelector(' select[name="reportType"] ');
-      // .then(console.log("waited for selector"));
-    } catch (err) {
-      console.log(err);
-      await browser.close();
-      return;
-    }
+    await page.waitFor(4000);
+    // waitForSelector wasn't working in headless mode so just adding a Wait above
+    // await page.waitForSelector(' select[name="reportType"] ');
+    // .then(console.log("waited for selector"));
 
     try {
       await page.click(" input[name='viewUsage_startDate'] ", {

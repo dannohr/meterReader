@@ -57,8 +57,8 @@ async function copyData() {
   //       .add(1, "d")
   //       .format("MM/DD/YYYY");
   //   }
-  // importMeterData(startDate);
-  importMeterData("08/01/2019");
+  importMeterData(startDate);
+  // importMeterData("04/01/2019");
 }
 
 copyData();

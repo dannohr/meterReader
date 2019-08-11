@@ -21,8 +21,6 @@ var sequelize = new Sequelize(
 );
 // }
 
-console.log(config);
-
 fs.readdirSync(__dirname)
   .filter(file => {
     return (
@@ -44,14 +42,14 @@ Object.keys(db).forEach(modelName => {
 
 // Following will sync database with Models.
 // DO NOT DO THIS is there is data you want to keep.
-sequelize
-  .sync({ force: true })
-  .then(function() {
-    console.log("database sync'd with models");
-  })
-  .catch(function(err) {
-    console.log(err);
-  });
+// sequelize
+//   .sync({ force: true })
+//   .then(function() {
+//     console.log("database sync'd with models");
+//   })
+//   .catch(function(err) {
+//     console.log(err);
+//   });
 //---------------------------------------------------
 
 db.sequelize = sequelize;
