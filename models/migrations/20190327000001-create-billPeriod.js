@@ -1,32 +1,20 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("Interval", {
+    return queryInterface.createTable("BillPeriod", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      meterDate: {
+      start: {
         allowNull: false,
         type: Sequelize.DATEONLY
       },
-      start: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
       end: {
         allowNull: false,
-        type: Sequelize.STRING
-      },
-      startDateTime: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      consumption: {
-        allowNull: false,
-        type: Sequelize.DECIMAL(8, 4)
+        type: Sequelize.DATEONLY
       },
       createdAt: {
         allowNull: false,
@@ -39,6 +27,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("Interval");
+    return queryInterface.dropTable("BillPeriod");
   }
 };

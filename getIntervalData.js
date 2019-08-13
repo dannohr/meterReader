@@ -1,6 +1,6 @@
 require("dotenv").config();
 // const scrapeInterval = require("./scraper");
-const scrapers = require("./scraper");
+const scrapers = require("./scrapers/scraper");
 const db = require("./models/index");
 const moment = require("moment");
 // { square, diag }
@@ -27,7 +27,7 @@ const importMeterData = async readDate => {
 
 async function copyData() {
   let lastDataDate = await db.Interval.max("startDateTime").then(max => {
-    return max;
+    return max === 0 ? "2019-03-31" : max;
   });
 
   let startDate = moment(lastDataDate)

@@ -8,20 +8,25 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
-        type: Sequelize.STRING
-      },
       meterDate: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       startRead: {
-        type: Sequelize.DECIMAL(8, 4)
+        type: Sequelize.DECIMAL(12, 4)
       },
       endRead: {
-        type: Sequelize.DECIMAL(8, 4)
+        type: Sequelize.DECIMAL(12, 4)
       },
       consumption: {
-        type: Sequelize.DECIMAL(8, 4)
+        type: Sequelize.DECIMAL(12, 4)
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
       }
     });
   },
