@@ -53,35 +53,82 @@ async function scrapeDaily(startDate, endDate) {
     console.log("Getting Daily Totals");
     await scraperFuncs(page).login();
     await scraperFuncs(page).selectDataPeriod("DAILY"); //INTERVAL or DAILY
-    await scraperFuncs(page).selectDateRange(startDate, endDate);
 
-    await page.waitFor(4000); // make sure data is loaded
+    let dataToImport = [];
 
-    let formattedData = await scraperFuncs(page)
-      .copyDailyData()
-      .then(data => {
-        console.log("----");
-        console.log(data);
-        console.log("----");
-        let formattedData = [];
+    // ------------------- REPEATS FOR EACH BATCH OF DATES -------------------
+    console.log("looping through the date ranges");
 
-        data.forEach(row => {
-          const FORMAT = "MM/DD/YYYY hh:mm a";
-          let data = [];
+    // Set first start date, this date will be incremented as we loop grabbing data in 10 day batches
+    let reportStartDate = startDate;
 
-          data[0] = row[0];
-          data[1] = parseFloat(row[1]);
-          data[2] = parseFloat(row[2]);
-          data[3] = parseFloat(row[3]);
+    // Calculate the number of dats between start date and end date
+    let numDays = moment
+      .duration(
+        moment(endDate, "MM/DD/YYYY").diff(moment(startDate, "MM/DD/YYYY"))
+      )
+      .asDays();
+    console.log("Orginial mumber of days between dates is: ", numDays);
 
-          formattedData.push(data);
+    // For now only doing 10 days at a time so don't have to worry about pagination
+    // If the end date is more than 9 days after the start date, define a new temp end date, otherwise use original end date
+    numDays > 9
+      ? (reportEndDate = moment(startDate, "MM/DD/YYYY")
+          .add(9, "d")
+          .format("MM/DD/YYYY"))
+      : (reportEndDate = endDate);
+
+    while (numDays > 0) {
+      console.log(
+        "Days Left:",
+        numDays,
+        "- Start",
+        reportStartDate,
+        "and End",
+        reportEndDate
+      );
+
+      await scraperFuncs(page).selectDateRange(reportStartDate, reportEndDate);
+
+      await page.waitFor(4000); // make sure data is loaded
+
+      await scraperFuncs(page)
+        .copyDailyData()
+        .then(data => {
+          data.forEach(row => {
+            let data = [];
+
+            data[0] = row[0];
+            data[1] = parseFloat(row[1]);
+            data[2] = parseFloat(row[2]);
+            data[3] = parseFloat(row[3]);
+            dataToImport.push(data);
+          });
         });
 
-        return formattedData;
-      });
+      // Set new start date to one day past previous end date
+      reportStartDate = moment(reportEndDate, "MM/DD/YYYY")
+        .add(1, "d")
+        .format("MM/DD/YYYY");
+
+      // Set new end date 9 days beyond new start date, this results in 10 actual days with of data
+      reportEndDate = moment(reportStartDate, "MM/DD/YYYY")
+        .add(9, "d")
+        .format("MM/DD/YYYY");
+
+      // Calculate number of days between new Start Date and the original End Date, used to determine if loop is done
+      numDays = moment
+        .duration(
+          moment(endDate, "MM/DD/YYYY").diff(
+            moment(reportStartDate, "MM/DD/YYYY")
+          )
+        )
+        .asDays();
+    }
+    // ------------------- END OF REPEAT FOR EACH BATCH OF DATES -------------------
 
     await browser.close();
-    return formattedData;
+    return dataToImport;
   } catch (e) {
     console.log(e);
     await browser.close();
