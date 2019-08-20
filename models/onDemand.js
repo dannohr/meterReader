@@ -1,16 +1,18 @@
 "use strict";
 module.exports = (sequelize, DataTypes) => {
-  const Daily = sequelize.define(
-    "Daily",
+  const OnDemand = sequelize.define(
+    "OnDemand",
     {
       id: {
         primaryKey: true,
         type: DataTypes.INTEGER,
         autoIncrement: true
       },
-      meterDate: DataTypes.DATE,
-      startRead: DataTypes.DECIMAL(12, 4),
-      endRead: DataTypes.DECIMAL(12, 4),
+
+      readTime: DataTypes.DATE,
+      previousDate: DataTypes.DATE,
+      currentMeterRead: DataTypes.DECIMAL(12, 4),
+      previousMeterRead: DataTypes.DECIMAL(12, 4),
       consumption: DataTypes.DECIMAL(8, 4)
     },
     {}
@@ -24,5 +26,5 @@ module.exports = (sequelize, DataTypes) => {
   //   Daily.belongsTo(models.Address, {});
   // };
 
-  return Daily;
+  return OnDemand;
 };

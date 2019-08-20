@@ -25,6 +25,7 @@ async function copyData() {
 
     let dailyData = await scrapers.scrapeDaily(startDate, endDate);
 
+    // If data was pulled from the website, insert it into the database
     if (dailyData) {
       dailyData.forEach(row => {
         console.log(row);

@@ -127,6 +127,21 @@ async function scrapeDaily(startDate, endDate) {
     }
     // ------------------- END OF REPEAT FOR EACH BATCH OF DATES -------------------
 
+    await scraperFuncs(page)
+      .copyOnDemandReadData()
+      .then(data => {
+        console.log(data);
+        // data.forEach(row => {
+        //   let data = [];
+
+        //   data[0] = row[0];
+        //   data[1] = parseFloat(row[1]);
+        //   data[2] = parseFloat(row[2]);
+        //   data[3] = parseFloat(row[3]);
+        //   dataToImport.push(data);
+        // });
+      });
+
     await browser.close();
     return dataToImport;
   } catch (e) {
@@ -135,5 +150,57 @@ async function scrapeDaily(startDate, endDate) {
     return;
   }
 }
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+async function scrapeOnDemandRead(lastDataDate) {
+  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(90000);
 
-module.exports = { scrapeInterval, scrapeDaily };
+  try {
+    console.log("Getting On Demand Read");
+    await scraperFuncs(page).login();
+
+    // Click button for on demand read
+    await page.$eval(
+      "#td_print_end > table > tbody > tr:nth-child(1) > td > table > tbody > tr > td:nth-child(5) > input[type=button]",
+      elem => elem.click()
+    );
+
+    // Wait for 3 minutes after clicking button
+    console.log("Waiting for 2 mins for website data to update");
+    await page.waitFor(2 * 60 * 1000); // make sure data is loaded
+    console.log("Done Waiting");
+
+    //click refresh link on the page
+    await page.$eval(
+      "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(1) > td > div > a",
+      elem => elem.click()
+    );
+
+    // Pause for refresh above to fully load
+    await page.waitFor(3000);
+
+    let dataToImport = await scraperFuncs(page)
+      .copyOnDemandReadData()
+      .then(data => {
+        let dataToImport = [];
+
+        dataToImport.push(moment(data[0], "MM/DD/YYYY HH:mm:ss").toDate());
+        dataToImport.push(moment(data[1], "MM/DD/YYYY").toDate());
+        dataToImport.push(data[2] * 1);
+        dataToImport.push(data[3] * 1);
+        dataToImport.push(data[4] * 1);
+
+        return dataToImport;
+      });
+
+    // await browser.close();
+    return dataToImport;
+  } catch (e) {
+    console.log(e);
+    // await browser.close();
+    return;
+  }
+}
+
+module.exports = { scrapeInterval, scrapeDaily, scrapeOnDemandRead };

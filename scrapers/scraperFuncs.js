@@ -79,5 +79,39 @@ module.exports = page => ({
 
       return results;
     });
+  },
+
+  async copyOnDemandReadData() {
+    return await page.evaluate(() => {
+      let results = [];
+      let cleanData = {};
+      const SELECTOR =
+        "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr";
+
+      let rowNodeList = document.querySelectorAll(SELECTOR);
+
+      let tds = Array.from(rowNodeList);
+
+      if (tds) {
+        tds.forEach(row => {
+          // innerText shows the data in the table
+          let rowData = row.innerText.split("\t");
+
+          // if (rowData[0].length === 10) {
+          results.push(rowData);
+          // }
+        });
+
+        cleanData = [
+          results[3][1] + " " + results[3][2], // readTime
+          results[4][1], // previousDate
+          results[3][3], // currentMeterRead
+          results[4][3], // previousMeterRead
+          results[3][4] // consumption
+        ];
+      }
+
+      return cleanData;
+    });
   }
 });
