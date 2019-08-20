@@ -194,11 +194,11 @@ async function scrapeOnDemandRead(lastDataDate) {
         return dataToImport;
       });
 
-    // await browser.close();
+    await browser.close();
     return dataToImport;
   } catch (e) {
     console.log(e);
-    // await browser.close();
+    await browser.close();
     return;
   }
 }
