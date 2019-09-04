@@ -27,6 +27,7 @@ module.exports = page => ({
     await page.keyboard.press("Backspace");
 
     await page.type(' input[name="viewUsage_startDate"] ', startDate);
+    
     await page.click(' input[name="viewUsage_endDate"] ', { clickCount: 3 });
     await page.keyboard.press("Backspace");
     await page.type(' input[name="viewUsage_endDate"] ', endDate);

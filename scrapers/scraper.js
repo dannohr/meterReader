@@ -3,7 +3,7 @@ const moment = require("moment");
 const scraperFuncs = require("./scraperFuncs");
 
 async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch({ headless: false, slowMo: 50});
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
 
@@ -62,7 +62,7 @@ async function scrapeDaily(startDate, endDate) {
     // Set first start date, this date will be incremented as we loop grabbing data in 10 day batches
     let reportStartDate = startDate;
 
-    // Calculate the number of dats between start date and end date
+    // Calculate the number of days between start date and end date
     let numDays = moment
       .duration(
         moment(endDate, "MM/DD/YYYY").diff(moment(startDate, "MM/DD/YYYY"))
@@ -127,20 +127,20 @@ async function scrapeDaily(startDate, endDate) {
     }
     // ------------------- END OF REPEAT FOR EACH BATCH OF DATES -------------------
 
-    await scraperFuncs(page)
-      .copyOnDemandReadData()
-      .then(data => {
-        console.log(data);
-        // data.forEach(row => {
-        //   let data = [];
+    // await scraperFuncs(page)
+    //   .copyOnDemandReadData()
+    //   .then(data => {
+    //     console.log(data);
+    //     // data.forEach(row => {
+    //     //   let data = [];
 
-        //   data[0] = row[0];
-        //   data[1] = parseFloat(row[1]);
-        //   data[2] = parseFloat(row[2]);
-        //   data[3] = parseFloat(row[3]);
-        //   dataToImport.push(data);
-        // });
-      });
+    //     //   data[0] = row[0];
+    //     //   data[1] = parseFloat(row[1]);
+    //     //   data[2] = parseFloat(row[2]);
+    //     //   data[3] = parseFloat(row[3]);
+    //     //   dataToImport.push(data);
+    //     // });
+    //   });
 
     await browser.close();
     return dataToImport;
