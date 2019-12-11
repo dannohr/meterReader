@@ -1,16 +1,20 @@
 module.exports = page => ({
   async login() {
-    const METER_READER = "https://www.smartmetertexas.com/CAP/public/";
+    const METER_READER = "https://www.smartmetertexas.com/home";
     await page.goto(METER_READER, { waitUntil: "networkidle2" });
-    await page.type("#username", process.env.WUSERNAME);
-    await page.type("#txtPassword", process.env.WTXTPASSWORD);
+    await page.type("#userid", process.env.WUSERNAME);
+    await page.type("#password", process.env.WTXTPASSWORD);
     await page.keyboard.press("Enter"); //.then(console.log("pressed enter"));
     await page.waitForNavigation({ waitUntil: "networkidle0" });
   },
 
   async selectDataPeriod(interval) {
+    await page.waitForSelector("#reporttype_input", {
+      visible: true
+    });
     await page
-      .select(' select[name="reportType"] ', interval)
+      // .select(' select[name="reporttype_input"] ', interval)
+      .select('select[name="reporttype_input"]', interval)
       .then(console.log("selected report for: ", interval));
 
     //Not sure why this is needed, was in the example I found online so leaving for now
@@ -20,17 +24,17 @@ module.exports = page => ({
   },
 
   async selectDateRange(startDate, endDate) {
-    await page.click(" input[name='viewUsage_startDate'] ", {
+    await page.click(" input[name='#startdatefield'] ", {
       clickCount: 3
     });
 
     await page.keyboard.press("Backspace");
 
-    await page.type(' input[name="viewUsage_startDate"] ', startDate);
-    
-    await page.click(' input[name="viewUsage_endDate"] ', { clickCount: 3 });
+    await page.type(' input[name="#startdatefield"] ', startDate);
+
+    await page.click(' input[name="enddatefield"] ', { clickCount: 3 });
     await page.keyboard.press("Backspace");
-    await page.type(' input[name="viewUsage_endDate"] ', endDate);
+    await page.type(' input[name="enddatefield"] ', endDate);
     await page.keyboard.press("Enter");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
   },

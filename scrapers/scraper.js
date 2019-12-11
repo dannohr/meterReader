@@ -3,7 +3,7 @@ const moment = require("moment");
 const scraperFuncs = require("./scraperFuncs");
 
 async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50});
+  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
 
@@ -45,9 +45,14 @@ async function scrapeInterval(readDate) {
 }
 
 async function scrapeDaily(startDate, endDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch({
+    headless: false,
+    slowMo: 50,
+    args: ["--start-maximized"]
+  });
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
+  await page.setViewport({ width: 1920, height: 1080 });
 
   try {
     console.log("Getting Daily Totals");
@@ -142,11 +147,11 @@ async function scrapeDaily(startDate, endDate) {
     //     // });
     //   });
 
-    await browser.close();
+    // await browser.close();
     return dataToImport;
   } catch (e) {
     console.log(e);
-    await browser.close();
+    // await browser.close();
     return;
   }
 }
