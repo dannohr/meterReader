@@ -13,29 +13,34 @@ module.exports = page => ({
       visible: true
     });
     await page
-      // .select(' select[name="reporttype_input"] ', interval)
       .select('select[name="reporttype_input"]', interval)
       .then(console.log("selected report for: ", interval));
-
-    //Not sure why this is needed, was in the example I found online so leaving for now
-    // await page
-    //   .waitForSelector(' select[name="reportType"] ')
-    //   .then(console.log("waited for selector"));
   },
 
   async selectDateRange(startDate, endDate) {
-    await page.click(" input[name='#startdatefield'] ", {
-      clickCount: 3
+    await page.click("#enddatefield", { clickCount: 3 });
+    await page.keyboard.press("Backspace");
+    await page.type("#enddatefield", endDate);
+    await page.click(
+      "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.panel-heading",
+      { clickCount: 1 }
+    );
+
+    await page.waitFor(1000);
+
+    await page.click("#startdatefield", { clickCount: 3 });
+    await page.keyboard.press("Backspace");
+    await page.type("#startdatefield", startDate);
+    await page.click(
+      "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.panel-heading",
+      { clickCount: 1 }
+    );
+
+    // await page.keyboard.press("Enter");
+    await page.click("#form > fieldset > div:nth-child(5) > button", {
+      clickCount: 1
     });
 
-    await page.keyboard.press("Backspace");
-
-    await page.type(' input[name="#startdatefield"] ', startDate);
-
-    await page.click(' input[name="enddatefield"] ', { clickCount: 3 });
-    await page.keyboard.press("Backspace");
-    await page.type(' input[name="enddatefield"] ', endDate);
-    await page.keyboard.press("Enter");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
   },
 
