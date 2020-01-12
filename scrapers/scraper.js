@@ -47,12 +47,12 @@ async function scrapeInterval(readDate) {
 async function scrapeDaily(startDate, endDate) {
   const browser = await puppeteer.launch({
     headless: false,
-    slowMo: 50,
-    args: ["--start-maximized"]
+    slowMo: 50
+    // args: ["--start-maximized"]
   });
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
-  await page.setViewport({ width: 1920, height: 1080 });
+  // await page.setViewport({ width: 1920, height: 1080 });
 
   try {
     console.log("Getting Daily Totals");
@@ -73,7 +73,7 @@ async function scrapeDaily(startDate, endDate) {
         moment(endDate, "MM/DD/YYYY").diff(moment(startDate, "MM/DD/YYYY"))
       )
       .asDays();
-    console.log("Orginial mumber of days between dates is: ", numDays);
+    console.log("Orginal mumber of days between dates is: ", numDays);
 
     // For now only doing 10 days at a time so don't have to worry about pagination
     // If the end date is more than 9 days after the start date, define a new temp end date, otherwise use original end date
@@ -100,6 +100,7 @@ async function scrapeDaily(startDate, endDate) {
       await scraperFuncs(page)
         .copyDailyData()
         .then(data => {
+          console.log("the data is: ", data);
           data.forEach(row => {
             let data = [];
 

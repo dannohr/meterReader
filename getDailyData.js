@@ -27,15 +27,16 @@ async function copyData() {
 
     // If data was pulled from the website, insert it into the database
     if (dailyData) {
-      dailyData.forEach(row => {
-        console.log(row);
-        db.Daily.create({
-          meterDate: row[0],
-          startRead: row[1],
-          endRead: row[2],
-          consumption: row[3]
-        }).catch(error => console.log(error));
-      });
+      console.log(dailyData);
+      // dailyData.forEach(row => {
+      //   console.log(row);
+      //   db.Daily.create({
+      //     meterDate: row[0],
+      //     startRead: row[1],
+      //     endRead: row[2],
+      //     consumption: row[3]
+      //   }).catch(error => console.log(error));
+      // });
     } else {
       console.log("No data to copy");
     }
