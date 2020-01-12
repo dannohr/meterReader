@@ -83,6 +83,12 @@ async function scrapeDaily(startDate, endDate) {
           .format("MM/DD/YYYY"))
       : (reportEndDate = endDate);
 
+    let today = moment(new Date(), "MM/DD/YYYY");
+
+    moment(reportEndDate, "MM/DD/YYYY").isAfter(today, "MM/DD/YYYY")
+      ? (reportEndDate = today)
+      : (reportEndDate = reportEndDate);
+
     while (numDays > 0) {
       console.log(
         "Days Left:",
@@ -100,16 +106,18 @@ async function scrapeDaily(startDate, endDate) {
       await scraperFuncs(page)
         .copyDailyData()
         .then(data => {
-          console.log("the data is: ", data);
-          data.forEach(row => {
-            let data = [];
-
-            data[0] = row[0];
-            data[1] = parseFloat(row[1]);
-            data[2] = parseFloat(row[2]);
-            data[3] = parseFloat(row[3]);
-            dataToImport.push(data);
-          });
+          console.log("*****   from scraper.js   ******");
+          console.log(data);
+          console.log("********************************");
+          // console.log("the data is: ", data);
+          // data.forEach(row => {
+          //   let data = [];
+          //   data[0] = row[0];
+          //   data[1] = parseFloat(row[1]);
+          //   data[2] = parseFloat(row[2]);
+          //   data[3] = parseFloat(row[3]);
+          dataToImport.push(data);
+          // });
         });
 
       // Set new start date to one day past previous end date
@@ -133,22 +141,7 @@ async function scrapeDaily(startDate, endDate) {
     }
     // ------------------- END OF REPEAT FOR EACH BATCH OF DATES -------------------
 
-    // await scraperFuncs(page)
-    //   .copyOnDemandReadData()
-    //   .then(data => {
-    //     console.log(data);
-    //     // data.forEach(row => {
-    //     //   let data = [];
-
-    //     //   data[0] = row[0];
-    //     //   data[1] = parseFloat(row[1]);
-    //     //   data[2] = parseFloat(row[2]);
-    //     //   data[3] = parseFloat(row[3]);
-    //     //   dataToImport.push(data);
-    //     // });
-    //   });
-
-    // await browser.close();
+    await browser.close();
     return dataToImport;
   } catch (e) {
     console.log(e);

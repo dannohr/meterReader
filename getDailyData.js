@@ -27,7 +27,9 @@ async function copyData() {
 
     // If data was pulled from the website, insert it into the database
     if (dailyData) {
+      console.log("Inserting:");
       console.log(dailyData);
+      console.log("_________________________");
       // dailyData.forEach(row => {
       //   console.log(row);
       //   db.Daily.create({
