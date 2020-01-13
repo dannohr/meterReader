@@ -52,6 +52,8 @@ module.exports = page => ({
           //   results.push(rowData);
           // }
         });
+
+        console.log(results);
         return results;
       }
     });
@@ -80,7 +82,7 @@ module.exports = page => ({
       });
     }
 
-    return tableData;
+    return rowData;
   },
 
   async copyOnDemandReadData() {

@@ -83,12 +83,6 @@ async function scrapeDaily(startDate, endDate) {
           .format("MM/DD/YYYY"))
       : (reportEndDate = endDate);
 
-    let today = moment(new Date(), "MM/DD/YYYY");
-
-    moment(reportEndDate, "MM/DD/YYYY").isAfter(today, "MM/DD/YYYY")
-      ? (reportEndDate = today)
-      : (reportEndDate = reportEndDate);
-
     while (numDays > 0) {
       console.log(
         "Days Left:",
@@ -106,18 +100,9 @@ async function scrapeDaily(startDate, endDate) {
       await scraperFuncs(page)
         .copyDailyData()
         .then(data => {
-          console.log("*****   from scraper.js   ******");
-          console.log(data);
-          console.log("********************************");
-          // console.log("the data is: ", data);
-          // data.forEach(row => {
-          //   let data = [];
-          //   data[0] = row[0];
-          //   data[1] = parseFloat(row[1]);
-          //   data[2] = parseFloat(row[2]);
-          //   data[3] = parseFloat(row[3]);
-          dataToImport.push(data);
-          // });
+          data.forEach(row => {
+            dataToImport.push(row);
+          });
         });
 
       // Set new start date to one day past previous end date
@@ -129,6 +114,13 @@ async function scrapeDaily(startDate, endDate) {
       reportEndDate = moment(reportStartDate, "MM/DD/YYYY")
         .add(9, "d")
         .format("MM/DD/YYYY");
+
+      // website won't let you enter a date later than today's, so adjust if necessary:
+      let today = moment().format("MM/DD/YYYY");
+
+      moment(reportEndDate, "MM/DD/YYYY").isAfter(today, "MM/DD/YYYY")
+        ? (reportEndDate = today)
+        : (reportEndDate = reportEndDate);
 
       // Calculate number of days between new Start Date and the original End Date, used to determine if loop is done
       numDays = moment
@@ -142,6 +134,7 @@ async function scrapeDaily(startDate, endDate) {
     // ------------------- END OF REPEAT FOR EACH BATCH OF DATES -------------------
 
     await browser.close();
+
     return dataToImport;
   } catch (e) {
     console.log(e);
@@ -149,6 +142,7 @@ async function scrapeDaily(startDate, endDate) {
     return;
   }
 }
+
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 async function scrapeOnDemandRead(lastDataDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });

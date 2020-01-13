@@ -30,15 +30,15 @@ async function copyData() {
       console.log("Inserting:");
       console.log(dailyData);
       console.log("_________________________");
-      // dailyData.forEach(row => {
-      //   console.log(row);
-      //   db.Daily.create({
-      //     meterDate: row[0],
-      //     startRead: row[1],
-      //     endRead: row[2],
-      //     consumption: row[3]
-      //   }).catch(error => console.log(error));
-      // });
+      dailyData.forEach(row => {
+        console.log(row);
+        db.Daily.create({
+          meterDate: row[0],
+          startRead: row[1],
+          endRead: row[2],
+          consumption: row[3]
+        }).catch(error => console.log(error));
+      });
     } else {
       console.log("No data to copy");
     }
