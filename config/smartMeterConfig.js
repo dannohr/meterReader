@@ -1,4 +1,5 @@
 module.exports = {
-  websiteUser: "username",
-  websitePassword: "password"
+  website: "https://www.smartmetertexas.com/home",
+  websiteUser: "dannohr",
+  websitePassword: "unr4daniel"
 };

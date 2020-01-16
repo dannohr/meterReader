@@ -47,8 +47,8 @@ async function scrapeInterval(readDate) {
 async function scrapeDaily(startDate, endDate) {
   const browser = await puppeteer.launch({
     headless: false,
-    slowMo: 50,
-    executablePath: "chromium-browser"
+    slowMo: 50
+    // executablePath: "chromium-browser"
     // args: ["--start-maximized"]
   });
   const page = await browser.newPage();

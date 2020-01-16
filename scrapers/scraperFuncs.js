@@ -2,10 +2,7 @@ var config = require("../config/smartMeterConfig");
 
 module.exports = page => ({
   async login() {
-    const METER_READER = "https://www.smartmetertexas.com/home";
-    await page.goto(METER_READER, { waitUntil: "networkidle0" });
-    // await page.type("#userid", process.env.WUSERNAME);
-    // await page.type("#password", process.env.WTXTPASSWORD);
+    await page.goto(config.website, { waitUntil: "networkidle0" });
     await page.type("#userid", config.websiteUser);
     await page.type("#password", config.websitePassword);
     await page.keyboard.press("Enter");
