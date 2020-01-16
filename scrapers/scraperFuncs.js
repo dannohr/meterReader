@@ -1,5 +1,4 @@
 var config = require("../config/smartMeterConfig");
-
 module.exports = page => ({
   async login() {
     await page.goto(config.website, { waitUntil: "networkidle0" });
