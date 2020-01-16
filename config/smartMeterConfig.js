@@ -1,4 +1,4 @@
 module.exports = {
-  websiteUser: "dannohr",
-  websitePassword: "unr4daniel"
+  websiteUser: "username",
+  websitePassword: "password"
 };
