@@ -3,7 +3,7 @@ module.exports = {
     username: "apps",
     password: "Password1",
     database: "meterReader",
-    host: "192.168.1.100",
+    host: "192.168.1.101",
     dialect: "postgres",
     seederStorage: "sequelize",
     logging: false,
@@ -17,7 +17,7 @@ module.exports = {
     username: "sa",
     password: "Password1",
     database: "meterReader",
-    host: "192.168.1.100",
+    host: "192.168.1.101",
     dialect: "mssql",
     dialectOptions: {
       encrypt: true,

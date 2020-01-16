@@ -47,7 +47,8 @@ async function scrapeInterval(readDate) {
 async function scrapeDaily(startDate, endDate) {
   const browser = await puppeteer.launch({
     headless: false,
-    slowMo: 50
+    slowMo: 50,
+    executablePath: "chromium-browser"
     // args: ["--start-maximized"]
   });
   const page = await browser.newPage();
@@ -147,51 +148,56 @@ async function scrapeDaily(startDate, endDate) {
 async function scrapeOnDemandRead(lastDataDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
+  let buttonSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(1) > button";
   page.setDefaultNavigationTimeout(90000);
 
   try {
     console.log("Getting On Demand Read");
     await scraperFuncs(page).login();
 
-    // Click button for on demand read
-    await page.$eval(
-      "#td_print_end > table > tbody > tr:nth-child(1) > td > table > tbody > tr > td:nth-child(5) > input[type=button]",
-      elem => elem.click()
-    );
+    // Make sure page has loaded after login
+    await page.waitFor(5000);
 
-    // Wait for 3 minutes after clicking button
-    console.log("Waiting for 2 mins for website data to update");
-    await page.waitFor(2 * 60 * 1000); // make sure data is loaded
-    console.log("Done Waiting");
+    // Click "Get Current Meter Read Button"
+    // await page.click(buttonSelector, { clickCount: 1 });
+
+    // Wait for 2 minutes after clicking button
+    // console.log("Waiting for 2 mins for website data to update");
+    // await page.waitFor(2 * 60 * 1000); // make sure data is loaded
+    // console.log("Done Waiting");
 
     //click refresh link on the page
-    await page.$eval(
-      "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(1) > td > div > a",
-      elem => elem.click()
-    );
+    // await page.$eval(
+    //   "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(1) > td > div > a",
+    //   elem => elem.click()
+    // );
 
     // Pause for refresh above to fully load
-    await page.waitFor(3000);
+    // await page.waitFor(3000);
 
     let dataToImport = await scraperFuncs(page)
       .copyOnDemandReadData()
       .then(data => {
+        console.log("data below:");
+        console.log(data);
+        console.log("___________");
         let dataToImport = [];
 
-        dataToImport.push(moment(data[0], "MM/DD/YYYY HH:mm:ss").toDate());
-        dataToImport.push(moment(data[1], "MM/DD/YYYY").toDate());
-        dataToImport.push(data[2] * 1);
-        dataToImport.push(data[3] * 1);
-        dataToImport.push(data[4] * 1);
+        // dataToImport.push(moment(data[0], "MM/DD/YYYY HH:mm:ss").toDate());
+        // dataToImport.push(moment(data[1], "MM/DD/YYYY").toDate());
+        // dataToImport.push(data[2] * 1);
+        // dataToImport.push(data[3] * 1);
+        // dataToImport.push(data[4] * 1);
 
         return dataToImport;
       });
 
-    await browser.close();
+    // await browser.close();
     return dataToImport;
   } catch (e) {
     console.log(e);
-    await browser.close();
+    // await browser.close();
     return;
   }
 }
