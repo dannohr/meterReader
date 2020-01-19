@@ -33,7 +33,7 @@ async function copyData() {
       dailyData.forEach(row => {
         console.log(row);
         db.Daily.create({
-          meterDate: row[0],
+          meterDate: moment(row[0], "MM/DD/YYYY").format("YYYY-MM-DD"),
           startRead: row[1],
           endRead: row[2],
           consumption: row[3]

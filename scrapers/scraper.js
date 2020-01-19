@@ -101,6 +101,7 @@ async function scrapeDaily(startDate, endDate) {
       await scraperFuncs(page)
         .copyDailyData()
         .then(data => {
+          console.log(data);
           data.forEach(row => {
             dataToImport.push(row);
           });
@@ -117,10 +118,10 @@ async function scrapeDaily(startDate, endDate) {
         .format("MM/DD/YYYY");
 
       // website won't let you enter a date later than today's, so adjust if necessary:
-      let today = moment().format("MM/DD/YYYY");
+      let today = moment();
 
       moment(reportEndDate, "MM/DD/YYYY").isAfter(today, "MM/DD/YYYY")
-        ? (reportEndDate = today)
+        ? (reportEndDate = today.format("MM/DD/YYYY"))
         : (reportEndDate = reportEndDate);
 
       // Calculate number of days between new Start Date and the original End Date, used to determine if loop is done
@@ -160,7 +161,7 @@ async function scrapeOnDemandRead(lastDataDate) {
     await page.waitFor(5000);
 
     // Click "Get Current Meter Read Button"
-    // await page.click(buttonSelector, { clickCount: 1 });
+    await page.click(buttonSelector, { clickCount: 1 });
 
     // Wait for 2 minutes after clicking button
     // console.log("Waiting for 2 mins for website data to update");
