@@ -1,9 +1,10 @@
 const puppeteer = require("puppeteer");
 const moment = require("moment");
 const scraperFuncs = require("./scraperFuncs");
+const config = require("../config/puppeteerConfig");
 
 async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
 
@@ -45,12 +46,7 @@ async function scrapeInterval(readDate) {
 }
 
 async function scrapeDaily(startDate, endDate) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    slowMo: 50
-    // executablePath: "chromium-browser"
-    // args: ["--start-maximized"]
-  });
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
   // await page.setViewport({ width: 1920, height: 1080 });
@@ -147,7 +143,7 @@ async function scrapeDaily(startDate, endDate) {
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 async function scrapeOnDemandRead(lastDataDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
 
