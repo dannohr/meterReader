@@ -20,14 +20,18 @@ async function copyData() {
     // If data was pulled from the website, insert it into the database
     if (dailyData) {
       console.log(dailyData);
-      // db.OnDemand.create({
-      //   readTime: dailyData[0],
-      //   previousDate: dailyData[1],
-      //   currentMeterRead: dailyData[2],
-      //   previousMeterRead: dailyData[3],
-      //   consumption: dailyData[4]
-      // }).catch(error => console.log(error));
-      // // });
+      db.OnDemand.create({
+        // previousDate: moment(dailyData[0], "MM/DD/YYYY").format("YYYY-MM-DD"),
+        previousDate: dailyData[0],
+        previousMeterRead: dailyData[1],
+        readTime: dailyData[2],
+        // readTime: moment(dailyData[2], "MM/DD/YYYY HH:mm:ss").format(
+        //   "YYYY-MM-DD HH:mm:ss"
+        // ),
+        currentMeterRead: dailyData[3],
+        consumption: dailyData[4]
+      }).catch(error => console.log(error));
+      // });
     } else {
       console.log("No data to copy");
     }

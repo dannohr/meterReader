@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       },
 
       readTime: DataTypes.DATE,
-      previousDate: DataTypes.DATE,
+      previousDate: DataTypes.DATEONLY,
       currentMeterRead: DataTypes.DECIMAL(12, 4),
       previousMeterRead: DataTypes.DECIMAL(12, 4),
       consumption: DataTypes.DECIMAL(8, 4)

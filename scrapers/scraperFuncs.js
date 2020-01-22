@@ -83,46 +83,5 @@ module.exports = page => ({
     }
 
     return rowData;
-  },
-
-  async copyOnDemandReadData() {
-    return await page.evaluate(() => {
-      let results = [];
-      let cleanData = {};
-      const SELECTOR =
-        "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2)";
-
-      const dateSelector =
-        "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)";
-
-      let rowNodeList = document.querySelectorAll(SELECTOR);
-
-      // console.log(name)
-
-      // let tds = Array.from(rowNodeList);
-
-      // if (tds) {
-      //   console.log(tds);
-      //   tds.forEach(row => {
-      //     // innerText shows the data in the table
-      //     let rowData = row.innerText.split("\t");
-
-      //     // if (rowData[0].length === 10) {
-      //     results.push(rowData);
-      //     // }
-      //   });
-
-      //   cleanData = [
-      //     results[3][1] + " " + results[3][2], // readTime
-      //     results[4][1], // previousDate
-      //     results[3][3], // currentMeterRead
-      //     results[4][3], // previousMeterRead
-      //     results[3][4] // consumption
-      //   ];
-      // }
-
-      // return cleanData;
-      return rowNodeList;
-    });
   }
 });

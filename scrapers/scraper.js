@@ -149,56 +149,105 @@ async function scrapeDaily(startDate, endDate) {
 async function scrapeOnDemandRead(lastDataDate) {
   const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(90000);
+
   let buttonSelector =
     "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(1) > button";
-  page.setDefaultNavigationTimeout(90000);
+
+  let dateSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)";
+  let timeSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col2 > div:nth-child(2)";
+  let meterReadSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col3 > div:nth-child(2)";
+  let usageSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)";
 
   try {
     console.log("Getting On Demand Read");
     await scraperFuncs(page).login();
 
     // Make sure page has loaded after login
-    await page.waitFor(5000);
+    // await page.waitFor(5000);
 
-    // Click "Get Current Meter Read Button"
-    await page.click(buttonSelector, { clickCount: 1 });
+    await page
+      .waitForSelector(buttonSelector)
+      .then(console.log("button is here"));
 
-    // Wait for 2 minutes after clicking button
-    // console.log("Waiting for 2 mins for website data to update");
-    // await page.waitFor(2 * 60 * 1000); // make sure data is loaded
-    // console.log("Done Waiting");
+    // await page.click(buttonSelector, { clickCount: 1 });
 
-    //click refresh link on the page
-    // await page.$eval(
-    //   "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(1) > td > div > a",
-    //   elem => elem.click()
-    // );
+    await page
+      .waitForSelector(dateSelector)
+      .then(console.log("On Demand Read Data is now present"));
 
-    // Pause for refresh above to fully load
-    // await page.waitFor(3000);
+    let latestEndOfDayDate = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)"
+        ).innerText
+    );
 
-    let dataToImport = await scraperFuncs(page)
-      .copyOnDemandReadData()
-      .then(data => {
-        console.log("data below:");
-        console.log(data);
-        console.log("___________");
-        let dataToImport = [];
+    let latestEndOfDayRead = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col3 > div:nth-child(2)"
+        ).innerText
+    );
 
-        // dataToImport.push(moment(data[0], "MM/DD/YYYY HH:mm:ss").toDate());
-        // dataToImport.push(moment(data[1], "MM/DD/YYYY").toDate());
-        // dataToImport.push(data[2] * 1);
-        // dataToImport.push(data[3] * 1);
-        // dataToImport.push(data[4] * 1);
+    let onDemandDate = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)"
+        ).innerText
+    );
 
-        return dataToImport;
-      });
+    let onDemandTime = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col2 > div:nth-child(2)"
+        ).innerText
+    );
 
-    // await browser.close();
+    let meterRead = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col3 > div:nth-child(2)"
+        ).innerText
+    );
+
+    let usage = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)"
+        ).innerText
+    );
+
+    let dataToImport = [];
+
+    // dataToImport.push(moment(latestEndOfDayDate, "MM/DD/YYYY").toDate());
+    dataToImport.push(
+      moment(latestEndOfDayDate, "MM/DD/YYYY").format("YYYY-MM-DD")
+    );
+
+    dataToImport.push(latestEndOfDayRead * 1);
+
+    dataToImport.push(
+      moment(onDemandDate + " " + onDemandTime, "MM/DD/YYYY HH:mm:ss").format(
+        "YYYY-MM-DD HH:mm:ss"
+      )
+      // onDemandDate + " " + onDemandTime
+    );
+
+    dataToImport.push(meterRead * 1);
+
+    dataToImport.push(usage * 1);
+
+    await browser.close();
+
     return dataToImport;
   } catch (e) {
     console.log(e);
-    // await browser.close();
+    await browser.close();
     return;
   }
 }
