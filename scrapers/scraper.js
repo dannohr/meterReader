@@ -170,7 +170,7 @@ async function scrapeOnDemandRead(lastDataDate) {
       .waitForSelector(buttonSelector)
       .then(console.log("button is here"));
 
-    await page.click(buttonSelector, { clickCount: 1 });
+    // await page.click(buttonSelector, { clickCount: 1 });
 
     await page
       .waitForSelector(dateSelector)
