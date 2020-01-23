@@ -3,48 +3,6 @@ const moment = require("moment");
 const scraperFuncs = require("./scraperFuncs");
 const config = require("../config/puppeteerConfig");
 
-async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch(config);
-  const page = await browser.newPage();
-  page.setDefaultNavigationTimeout(90000);
-
-  try {
-    await scraperFuncs(page).login();
-    await scraperFuncs(page).selectDataPeriod("INTERVAL"); //INTERVAL or DAILY
-    await scraperFuncs(page).selectDateRange(readDate, readDate);
-
-    await page.waitFor(4000); // make sure data is loaded
-
-    let formattedData = await scraperFuncs(page)
-      .copyIntervalData()
-      .then(data => {
-        let formattedData = [];
-
-        data.forEach(row => {
-          const FORMAT = "MM/DD/YYYY hh:mm a";
-          let data = [];
-
-          data[0] = moment(readDate, "MM/DD/YYYY").format("YYYY-MM-DD");
-          data[1] = readDate + " " + row[0];
-          data[2] = readDate + " " + row[1];
-          data[3] = moment(readDate + " " + row[0], FORMAT)
-            .subtract(5, "h")
-            .format(FORMAT);
-          data[4] = parseFloat(row[2]);
-          formattedData.push(data);
-        });
-        return formattedData;
-      });
-
-    await browser.close();
-    return formattedData;
-  } catch (e) {
-    console.log(e);
-    await browser.close();
-    return;
-  }
-}
-
 async function scrapeDaily(startDate, endDate) {
   const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
@@ -149,7 +107,6 @@ async function scrapeOnDemandRead(lastDataDate) {
 
   let buttonSelector =
     "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(1) > button";
-
   let dateSelector =
     "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)";
   let timeSelector =
@@ -176,71 +133,13 @@ async function scrapeOnDemandRead(lastDataDate) {
       .waitForSelector(dateSelector)
       .then(console.log("On Demand Read Data is now present"));
 
-    let latestEndOfDayDate = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)"
-        ).innerText
-    );
+    let onDemandData = await scraperFuncs(page).copyOnDemandData();
 
-    let latestEndOfDayRead = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col3 > div:nth-child(2)"
-        ).innerText
-    );
-
-    let onDemandDate = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)"
-        ).innerText
-    );
-
-    let onDemandTime = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col2 > div:nth-child(2)"
-        ).innerText
-    );
-
-    let meterRead = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col3 > div:nth-child(2)"
-        ).innerText
-    );
-
-    let usage = await page.evaluate(
-      () =>
-        document.querySelector(
-          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)"
-        ).innerText
-    );
-
-    let dataToImport = [];
-
-    // dataToImport.push(moment(latestEndOfDayDate, "MM/DD/YYYY").toDate());
-    dataToImport.push(
-      moment(latestEndOfDayDate, "MM/DD/YYYY").format("YYYY-MM-DD")
-    );
-
-    dataToImport.push(latestEndOfDayRead * 1);
-
-    dataToImport.push(
-      moment(onDemandDate + " " + onDemandTime, "MM/DD/YYYY HH:mm:ss").format(
-        "YYYY-MM-DD HH:mm:ss"
-      )
-      // onDemandDate + " " + onDemandTime
-    );
-
-    dataToImport.push(meterRead * 1);
-
-    dataToImport.push(usage * 1);
+    await console.log("On Demand Data is: ", onDemandData);
 
     await browser.close();
 
-    return dataToImport;
+    return onDemandData;
   } catch (e) {
     console.log(e);
     await browser.close();
@@ -248,4 +147,4 @@ async function scrapeOnDemandRead(lastDataDate) {
   }
 }
 
-module.exports = { scrapeInterval, scrapeDaily, scrapeOnDemandRead };
+module.exports = { scrapeDaily, scrapeOnDemandRead };
