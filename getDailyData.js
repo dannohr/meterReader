@@ -13,7 +13,7 @@ async function copyData() {
   // set start date to day after the last date in the database.
   // Not sure why but have to add 2 to get it to the correct date.
   let startDate = moment(lastDataDate)
-    .add(2, "d")
+    .add(1, "d")
     .format("MM/DD/YYYY");
 
   // Set end date to today
