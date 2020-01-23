@@ -87,7 +87,15 @@ module.exports = page => ({
     return rowData;
   },
 
-  async copyOnDemandData() {
+  async copyOnDemandData(dateSelector) {
+    // let dateSelector =
+    //   "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)";
+
+    // Wait for the Date field in "Latest end of Day Read" table to load, this may take awhile it it is getting new data from electric meter.
+    await page
+      .waitForSelector(dateSelector, { timeout: 60000 }) // 60 seconds
+      .then(console.log("On Demand Read Data is now present"));
+
     let latestEndOfDayDate = await page.evaluate(
       () =>
         document.querySelector(
@@ -129,7 +137,9 @@ module.exports = page => ({
           "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)"
         ).innerText
     );
+
     let dataToImport = [];
+
     dataToImport.push(
       moment(latestEndOfDayDate, "MM/DD/YYYY").format("YYYY-MM-DD")
     );

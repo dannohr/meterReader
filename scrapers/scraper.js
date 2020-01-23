@@ -108,13 +108,7 @@ async function scrapeOnDemandRead(lastDataDate) {
   let buttonSelector =
     "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(1) > button";
   let dateSelector =
-    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)";
-  let timeSelector =
-    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col2 > div:nth-child(2)";
-  let meterReadSelector =
-    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col3 > div:nth-child(2)";
-  let usageSelector =
-    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)";
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)";
 
   try {
     console.log("Getting On Demand Read");
@@ -123,23 +117,36 @@ async function scrapeOnDemandRead(lastDataDate) {
     // Make sure page has loaded after login
     // await page.waitFor(5000);
 
-    await page
-      .waitForSelector(buttonSelector)
-      .then(console.log("button is here"));
+    // Make sure login has completed and "Get Current Meter Read" button is displayes
+    await page.waitForSelector(buttonSelector);
 
-    // await page.click(buttonSelector, { clickCount: 1 });
+    let dataForDatabase = [];
 
-    await page
-      .waitForSelector(dateSelector)
-      .then(console.log("On Demand Read Data is now present"));
+    // Get on demand data to see if it's time to pull new data
+    let onDemandData = await scraperFuncs(page).copyOnDemandData(dateSelector);
 
-    let onDemandData = await scraperFuncs(page).copyOnDemandData();
+    console.log(
+      "Last data in db is from:",
+      moment(lastDataDate).format("YYYY-MM-DD HH:mm:ss")
+    );
 
-    await console.log("On Demand Data is: ", onDemandData);
+    console.log("Last read on website was", onDemandData[2]);
+
+    // If the date/time on the website does match the latest in the database, grab it to add it to db
+    // This could happen if the update button was previously clicked but it took a long time for the
+    // data to reload and puppetter timed out before it could grab the data
+    if (moment(lastDataDate).format("YYYY-MM-DD HH:mm:ss") != onDemandData[2]) {
+      console.log("Add manual read data");
+      dataForDatabase.push(onDemandData);
+    }
+
+    console.log("On Demand Data is: ", dataForDatabase);
 
     await browser.close();
 
-    return onDemandData;
+    // await page.click(buttonSelector, { clickCount: 1 });
+    // await browser.close();
+    return dataForDatabase;
   } catch (e) {
     console.log(e);
     await browser.close();
