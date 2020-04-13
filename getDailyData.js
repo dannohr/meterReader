@@ -13,7 +13,7 @@ async function copyData() {
   // set start date to day after the last date in the database.
   // Not sure why but have to add 2 to get it to the correct date.
   let startDate = moment(lastDataDate)
-    .add(2, "d")
+    .add(1, "d")
     .format("MM/DD/YYYY");
 
   // Set end date to today
@@ -33,7 +33,7 @@ async function copyData() {
       dailyData.forEach(row => {
         console.log(row);
         db.Daily.create({
-          meterDate: row[0],
+          meterDate: moment(row[0], "MM/DD/YYYY").format("YYYY-MM-DD"),
           startRead: row[1],
           endRead: row[2],
           consumption: row[3]

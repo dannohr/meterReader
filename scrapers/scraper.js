@@ -1,55 +1,10 @@
 const puppeteer = require("puppeteer");
 const moment = require("moment");
 const scraperFuncs = require("./scraperFuncs");
-
-async function scrapeInterval(readDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
-  const page = await browser.newPage();
-  page.setDefaultNavigationTimeout(90000);
-
-  try {
-    await scraperFuncs(page).login();
-    await scraperFuncs(page).selectDataPeriod("INTERVAL"); //INTERVAL or DAILY
-    await scraperFuncs(page).selectDateRange(readDate, readDate);
-
-    await page.waitFor(4000); // make sure data is loaded
-
-    let formattedData = await scraperFuncs(page)
-      .copyIntervalData()
-      .then(data => {
-        let formattedData = [];
-
-        data.forEach(row => {
-          const FORMAT = "MM/DD/YYYY hh:mm a";
-          let data = [];
-
-          data[0] = moment(readDate, "MM/DD/YYYY").format("YYYY-MM-DD");
-          data[1] = readDate + " " + row[0];
-          data[2] = readDate + " " + row[1];
-          data[3] = moment(readDate + " " + row[0], FORMAT)
-            .subtract(5, "h")
-            .format(FORMAT);
-          data[4] = parseFloat(row[2]);
-          formattedData.push(data);
-        });
-        return formattedData;
-      });
-
-    await browser.close();
-    return formattedData;
-  } catch (e) {
-    console.log(e);
-    await browser.close();
-    return;
-  }
-}
+const config = require("../config/puppeteerConfig");
 
 async function scrapeDaily(startDate, endDate) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    slowMo: 50
-    // args: ["--start-maximized"]
-  });
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
   // await page.setViewport({ width: 1920, height: 1080 });
@@ -100,6 +55,7 @@ async function scrapeDaily(startDate, endDate) {
       await scraperFuncs(page)
         .copyDailyData()
         .then(data => {
+          console.log(data);
           data.forEach(row => {
             dataToImport.push(row);
           });
@@ -116,10 +72,10 @@ async function scrapeDaily(startDate, endDate) {
         .format("MM/DD/YYYY");
 
       // website won't let you enter a date later than today's, so adjust if necessary:
-      let today = moment().format("MM/DD/YYYY");
+      let today = moment();
 
       moment(reportEndDate, "MM/DD/YYYY").isAfter(today, "MM/DD/YYYY")
-        ? (reportEndDate = today)
+        ? (reportEndDate = today.format("MM/DD/YYYY"))
         : (reportEndDate = reportEndDate);
 
       // Calculate number of days between new Start Date and the original End Date, used to determine if loop is done
@@ -145,50 +101,52 @@ async function scrapeDaily(startDate, endDate) {
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 async function scrapeOnDemandRead(lastDataDate) {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90000);
+
+  let buttonSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(1) > button";
+  let dateSelector =
+    "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)";
 
   try {
     console.log("Getting On Demand Read");
     await scraperFuncs(page).login();
 
-    // Click button for on demand read
-    await page.$eval(
-      "#td_print_end > table > tbody > tr:nth-child(1) > td > table > tbody > tr > td:nth-child(5) > input[type=button]",
-      elem => elem.click()
+    // Make sure page has loaded after login
+    // await page.waitFor(5000);
+
+    // Make sure login has completed and "Get Current Meter Read" button is displayes
+    await page.waitForSelector(buttonSelector);
+
+    let dataForDatabase = [];
+
+    // Get on demand data to see if it's time to pull new data
+    let onDemandData = await scraperFuncs(page).copyOnDemandData(dateSelector);
+
+    console.log(
+      "Last data in db is from:",
+      moment(lastDataDate).format("YYYY-MM-DD HH:mm:ss")
     );
 
-    // Wait for 3 minutes after clicking button
-    console.log("Waiting for 2 mins for website data to update");
-    await page.waitFor(2 * 60 * 1000); // make sure data is loaded
-    console.log("Done Waiting");
+    console.log("Last read on website was", onDemandData[2]);
 
-    //click refresh link on the page
-    await page.$eval(
-      "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr:nth-child(1) > td > div > a",
-      elem => elem.click()
-    );
+    // If the date/time on the website does match the latest in the database, grab it to add it to db
+    // This could happen if the update button was previously clicked but it took a long time for the
+    // data to reload and puppetter timed out before it could grab the data
+    if (moment(lastDataDate).format("YYYY-MM-DD HH:mm:ss") != onDemandData[2]) {
+      console.log("Add manual read data");
+      dataForDatabase.push(onDemandData);
+    }
 
-    // Pause for refresh above to fully load
-    await page.waitFor(3000);
-
-    let dataToImport = await scraperFuncs(page)
-      .copyOnDemandReadData()
-      .then(data => {
-        let dataToImport = [];
-
-        dataToImport.push(moment(data[0], "MM/DD/YYYY HH:mm:ss").toDate());
-        dataToImport.push(moment(data[1], "MM/DD/YYYY").toDate());
-        dataToImport.push(data[2] * 1);
-        dataToImport.push(data[3] * 1);
-        dataToImport.push(data[4] * 1);
-
-        return dataToImport;
-      });
+    console.log("On Demand Data is: ", dataForDatabase);
 
     await browser.close();
-    return dataToImport;
+
+    // await page.click(buttonSelector, { clickCount: 1 });
+    // await browser.close();
+    return dataForDatabase;
   } catch (e) {
     console.log(e);
     await browser.close();
@@ -196,4 +154,4 @@ async function scrapeOnDemandRead(lastDataDate) {
   }
 }
 
-module.exports = { scrapeInterval, scrapeDaily, scrapeOnDemandRead };
+module.exports = { scrapeDaily, scrapeOnDemandRead };

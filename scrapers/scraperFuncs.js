@@ -1,9 +1,11 @@
+var config = require("../config/smartMeterConfig");
+const moment = require("moment");
+
 module.exports = page => ({
   async login() {
-    const METER_READER = "https://www.smartmetertexas.com/home";
-    await page.goto(METER_READER, { waitUntil: "networkidle2" });
-    await page.type("#userid", process.env.WUSERNAME);
-    await page.type("#password", process.env.WTXTPASSWORD);
+    await page.goto(config.website, { waitUntil: "networkidle0" });
+    await page.type("#userid", config.websiteUser);
+    await page.type("#password", config.websitePassword);
     await page.keyboard.press("Enter");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
   },
@@ -85,37 +87,76 @@ module.exports = page => ({
     return rowData;
   },
 
-  async copyOnDemandReadData() {
-    return await page.evaluate(() => {
-      let results = [];
-      let cleanData = {};
-      const SELECTOR =
-        "#td_print_end > table > tbody > tr:nth-child(3) > td > table > tbody > tr";
+  async copyOnDemandData(dateSelector) {
+    // let dateSelector =
+    //   "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)";
 
-      let rowNodeList = document.querySelectorAll(SELECTOR);
+    // Wait for the Date field in "Latest end of Day Read" table to load, this may take awhile it it is getting new data from electric meter.
+    await page
+      .waitForSelector(dateSelector, { timeout: 60000 }) // 60 seconds
+      .then(console.log("On Demand Read Data is now present"));
 
-      let tds = Array.from(rowNodeList);
+    let latestEndOfDayDate = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col1 > div:nth-child(2)"
+        ).innerText
+    );
 
-      if (tds) {
-        tds.forEach(row => {
-          // innerText shows the data in the table
-          let rowData = row.innerText.split("\t");
+    let latestEndOfDayRead = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-4.col-xs-12.last-meter-read > div > div:nth-child(2) > div.last-mtr-rdg-col3 > div:nth-child(2)"
+        ).innerText
+    );
 
-          // if (rowData[0].length === 10) {
-          results.push(rowData);
-          // }
-        });
+    let onDemandDate = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col1 > div:nth-child(2)"
+        ).innerText
+    );
 
-        cleanData = [
-          results[3][1] + " " + results[3][2], // readTime
-          results[4][1], // previousDate
-          results[3][3], // currentMeterRead
-          results[4][3], // previousMeterRead
-          results[3][4] // consumption
-        ];
-      }
+    let onDemandTime = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col2 > div:nth-child(2)"
+        ).innerText
+    );
 
-      return cleanData;
-    });
+    let meterRead = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col3 > div:nth-child(2)"
+        ).innerText
+    );
+
+    let usage = await page.evaluate(
+      () =>
+        document.querySelector(
+          "#wrapper > div.row.page-content-wrapper > main > div > div:nth-child(5) > div.col-lg-8.col-xs-12 > div > div.row.panel > div.col-lg-8.col-xs-12.ondemand-meter-read > div > div:nth-child(2) > div.ondemand-mtr-rdg-col4 > div:nth-child(2)"
+        ).innerText
+    );
+
+    let dataToImport = [];
+
+    dataToImport.push(
+      moment(latestEndOfDayDate, "MM/DD/YYYY").format("YYYY-MM-DD")
+    );
+
+    dataToImport.push(latestEndOfDayRead * 1);
+
+    dataToImport.push(
+      moment(onDemandDate + " " + onDemandTime, "MM/DD/YYYY HH:mm:ss").format(
+        "YYYY-MM-DD HH:mm:ss"
+      )
+      // onDemandDate + " " + onDemandTime
+    );
+
+    dataToImport.push(meterRead * 1);
+
+    dataToImport.push(usage * 1);
+
+    return dataToImport;
   }
 });

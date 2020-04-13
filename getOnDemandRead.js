@@ -4,40 +4,42 @@ const db = require("./models/index");
 const moment = require("moment");
 
 async function copyData() {
+  console.log("  ");
+  console.log(
+    "--------------   Starting OnDemand Read at ",
+    moment().format("llll"),
+    "--------------"
+  );
   // Lookup last date we have data for, if we don't have a last date set default
   let lastDataDate = await db.OnDemand.max("readTime").then(max => {
     return max === 0 ? "2019-03-30" : max;
   });
-  console.log("Last On Demand Read Date:", moment(lastDataDate).format("llll"));
 
-  // Define Current Time
-  let endDate = moment(); //.format("MM/DD/YYYY");
+  // Get manual read data from website
+  let dailyData = await scrapers.scrapeOnDemandRead(lastDataDate);
 
-  // If startDate and endDate are the same, that means it's today.  Data is not available for current days, so no reason to run this then.
-  if (1 === 1) {
-    // console.log("Getting Data for ", startDate, " through ", endDate);
-    // console.log("Last data date is ", lastDataDate);
-    let dailyData = await scrapers.scrapeOnDemandRead(lastDataDate);
-
-    // If data was pulled from the website, insert it into the database
-    if (dailyData) {
-      // console.log("XXXXXXXXXXXXXXXXXXXXX");
-      // console.log(dailyData);
-
+  // If data was pulled from the website, insert it into the database
+  if (dailyData && dailyData.length > 0) {
+    dailyData.forEach(function(data) {
+      console.log(data);
       db.OnDemand.create({
-        readTime: dailyData[0],
-        previousDate: dailyData[1],
-        currentMeterRead: dailyData[2],
-        previousMeterRead: dailyData[3],
-        consumption: dailyData[4]
-      }).catch(error => console.log(error));
-      // });
-    } else {
-      console.log("No data to copy");
-    }
+        previousDate: data[0],
+        previousMeterRead: data[1],
+        readTime: data[2],
+        currentMeterRead: data[3],
+        consumption: data[4]
+      })
+        .then(console.log("Data added to database"))
+        .catch(error => console.log(error));
+    });
   } else {
-    console.log("Data is already current");
+    console.log("No data to copy");
   }
+
+  console.log(
+    "-----------------------------------------------------------------------------------"
+  );
+  console.log("  ");
 }
 
 copyData();

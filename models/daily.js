@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         autoIncrement: true
       },
-      meterDate: DataTypes.DATE,
+      meterDate: DataTypes.DATEONLY,
       startRead: DataTypes.DECIMAL(12, 4),
       endRead: DataTypes.DECIMAL(12, 4),
       consumption: DataTypes.DECIMAL(8, 4)
