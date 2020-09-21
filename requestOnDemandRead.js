@@ -52,6 +52,16 @@ const requestOnDemandRead = async () => {
     })
     .catch((err) => {
       console.log(err.response.data);
+
+      db.OnDemandReadRequest.create({
+        previousDate: data[0],
+        previousMeterRead: data[1],
+        readTime: data[2],
+        currentMeterRead: data[3],
+        consumption: data[4],
+      })
+        .then(console.log("Data added to database"))
+        .catch((error) => console.log(error));
     });
 };
 
