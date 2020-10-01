@@ -1,6 +1,6 @@
 "use strict";
 module.exports = (sequelize, DataTypes) => {
-  const OnDemand = sequelize.define(
+  const OnDemandReadRequest = sequelize.define(
     "OnDemandReadRequest",
     {
       id: {
