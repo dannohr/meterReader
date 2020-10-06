@@ -19,6 +19,47 @@ const instance = axios.create({
   }),
 });
 
+const smtApiPost = async (body, site) => {
+  return await instance({
+    method: "post",
+    url: smtUrl + site,
+    data: body,
+
+    auth: {
+      username: smtUserName,
+      password: smtPassword,
+    },
+  })
+    .then((response) => {
+      return response.data;
+    })
+    .catch((err) => {
+      return err.response.data;
+    });
+};
+
+const readRequest = async () => {
+  return await db.OnDemandReadRequest.findAll({
+    where: { statusCode: 0, registeredRead: null },
+    raw: true,
+  });
+  // return data;
+};
+
+const onDemandReads = async () => {
+  const needRegisteredRead = await readRequest();
+
+  if (needRegisteredRead.length > 0) {
+    console.log("read is waiting to be read");
+    console.log(needRegisteredRead);
+    await getDemandRead(needRegisteredRead);
+  } else {
+    console.log("there is no read waiting, trigger a new one");
+    console.log(needRegisteredRead);
+    await requestOnDemandRead();
+  }
+};
+
 const requestOnDemandRead = async () => {
   console.log("Starting On Demand Read Request");
   console.log(" ");
@@ -32,127 +73,54 @@ const requestOnDemandRead = async () => {
     SMTTermsandConditions: "Y",
   };
 
-  console.log(" ");
-  console.log("The Request Body Is:");
-  console.log(body);
-  console.log(" ");
-  console.log(" ");
+  // const responseData = await makeReadRequest();
+  const responseData = await smtApiPost(body, "odr/");
 
-  const makeReadRequest = async () => {
-    await instance({
-      method: "post",
-      url: smtUrl + "odr/",
-      data: body,
-
-      auth: {
-        username: smtUserName,
-        password: smtPassword,
-      },
-    })
-      .then((response) => {
-        let onDemandReadRequest = response.data;
-
-        console.log(" ---  On Demand Request Response --- ");
-        console.log(onDemandReadRequest);
-        console.log("-------------------------------------");
-      })
-      .catch((err) => {
-        // let errData = err.response.data;
-        console.log("There was an error and the response is:");
-        console.log(err);
-        console.log("");
-        console.log("");
-        console.log("");
-        // if (err) {
-        //   db.OnDemandReadRequest.create({
-        //     trans_id: err.response.data.trans_id,
-        //     correlationId: err.response.data.correlationId,
-        //     statusCode: err.response.data.statusCode,
-        //     statusReason: err.response.data.statusReason,
-        //   })
-        //     .then(console.log("Data added to database"))
-        //     .catch((error) => console.log(error));
-        // }
-      });
-  };
-
-  const responseData = await makeReadRequest();
-
-  console.log("");
-  console.log("");
-  console.log("responseData is:");
-  console.log(responseData);
-  console.log("");
-  console.log("");
   // save response to database.
-
   db.OnDemandReadRequest.create({
-    trans_id: trans_id,
-    correlationId: onDemandReadRequest.correlationId,
-    statusCode: onDemandReadRequest.statusCode,
-    statusReason: onDemandReadRequest.statusReason,
+    trans_id: responseData.trans_id,
+    correlationId: responseData.correlationId,
+    statusCode: responseData.statusCode,
+    statusReason: responseData.statusReason,
   })
     .then(console.log("Data added to database"))
     .catch((error) => console.log(error));
 };
 
-const getDemandRead = async () => {
-  console.log("Starting to Get On Demand Read ");
-  console.log(postUrl);
-  let trans_id = Date.now().toString();
+const getDemandRead = async (needRegisteredRead) => {
+  console.log("Starting to Get On Demand Meter Read Data ");
+
+  if (!needRegisteredRead[0]) {
+    console.log("There is no unread read request");
+    return false;
+  }
+
+  console.log(needRegisteredRead);
   let body = {
-    trans_id: "456",
-    requestorID: "dannohr",
-    correlationId: "863155",
+    trans_id: needRegisteredRead[0].trans_id,
+    requestorID: smtUserName,
+    correlationId: needRegisteredRead[0].correlationId,
     SMTTermsandConditions: "Y",
   };
 
-  console.log("The Request Body Is:");
-  console.log(body);
-  console.log("XXXXXXXXXXXXX");
+  const responseData = await smtApiPost(body, "odrstatus/");
 
-  console.log("trans_id", trans_id);
-
-  await instance({
-    method: "post",
-    // url: "https://services.smartmetertexas.net/odr/",
-    url: postUrl,
-    data: body,
-
-    auth: {
-      username: username,
-      password: password,
-    },
-  })
-    .then((response) => {
-      let onDemandReadRequest = response.data;
-
-      console.log(" ---  On Demand Request Response --- ");
-      console.log(onDemandReadRequest);
-      console.log("-------------------------------------");
-
-      // db.OnDemandReadRequest.create({
-      //   trans_id: trans_id,
-      //   correlationId: "",
-      //   statusCode: onDemandReadRequest.statusCode,
-      //   statusReason: onDemandReadRequest.statusReason,
-      // })
-      //   .then(console.log("Data added to database"))
-      //   .catch((error) => console.log(error));
-    })
-    .catch((err) => {
-      let onDemandReadRequest = err.response.data;
-      console.log(onDemandReadRequest);
-
-      // db.OnDemandReadRequest.create({
-      //   trans_id: onDemandReadRequest.trans_id,
-      //   correlationId: onDemandReadRequest.correlationId,
-      //   statusCode: onDemandReadRequest.statusCode,
-      //   statusReason: onDemandReadRequest.statusReason,
-      // })
-      //   .then(console.log("Data added to database"))
-      //   .catch((error) => console.log(error));
-    });
+  if (responseData.statusCode === "PEN") {
+    console.log("On Demand Read Still Pending");
+    return false;
+  } else {
+    await db.OnDemandReadRequest.update(
+      {
+        registeredRead: responseData.odrRead.registeredRead,
+        readDate: responseData.odrRead.readDate,
+      },
+      {
+        where: {
+          trans_id: responseData.trans_id,
+        },
+      }
+    ).then(console.log("Data added to database"));
+  }
 };
 
-requestOnDemandRead();
+onDemandReads();

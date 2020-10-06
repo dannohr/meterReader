@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       correlationId: DataTypes.STRING,
       statusCode: DataTypes.STRING,
       statusReason: DataTypes.STRING,
+      registeredRead: DataTypes.FLOAT,
+      readDate: DataTypes.DATE,
     },
     {}
   );
