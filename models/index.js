@@ -16,7 +16,7 @@ var sequelize = new Sequelize(
   config.password,
   config
   // { logging: msg => logger.info(msg) }
-  // { logging: false }
+  // logging: false
 );
 // }
 

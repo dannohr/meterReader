@@ -38,26 +38,29 @@ const smtApiPost = async (body, site) => {
     });
 };
 
-const readRequest = async () => {
+const getLastOnDemandRequest = async () => {
   return await db.OnDemandReadRequest.findAll({
-    where: { statusCode: 0, registeredRead: null },
+    where: { statusCode: 0 },
+    attributes: [db.sequelize.fn("MAX", db.sequelize.col("trans_id"))],
     raw: true,
+  }).then((data) => {
+    if (data[0]) {
+      // The above findAll returns the max trans_id
+      let maxTransId = data[0]["MAX(`trans_id`)"];
+
+      // Tehe below findAll returns all the data correspnding to that trans_id
+      return db.OnDemandReadRequest.findAll({
+        where: { trans_id: maxTransId },
+
+        raw: true,
+      }).then((data) => {
+        return data[0];
+      });
+    } else {
+      console.log("returning null");
+      return null;
+    }
   });
-  // return data;
-};
-
-const onDemandReads = async () => {
-  const needRegisteredRead = await readRequest();
-
-  if (needRegisteredRead.length > 0) {
-    console.log("read is waiting to be read");
-    console.log(needRegisteredRead);
-    await getDemandRead(needRegisteredRead);
-  } else {
-    console.log("there is no read waiting, trigger a new one");
-    console.log(needRegisteredRead);
-    await requestOnDemandRead();
-  }
 };
 
 const requestOnDemandRead = async () => {
@@ -87,19 +90,19 @@ const requestOnDemandRead = async () => {
     .catch((error) => console.log(error));
 };
 
-const getDemandRead = async (needRegisteredRead) => {
+const getDemandReadData = async (needRegisteredRead) => {
   console.log("Starting to Get On Demand Meter Read Data ");
 
-  if (!needRegisteredRead[0]) {
-    console.log("There is no unread read request");
-    return false;
-  }
+  // if (!needRegisteredRead[0]) {
+  //   console.log("There is no unread read request");
+  //   return false;
+  // }
 
   console.log(needRegisteredRead);
   let body = {
-    trans_id: needRegisteredRead[0].trans_id,
+    trans_id: needRegisteredRead.trans_id,
     requestorID: smtUserName,
-    correlationId: needRegisteredRead[0].correlationId,
+    correlationId: needRegisteredRead.correlationId,
     SMTTermsandConditions: "Y",
   };
 
@@ -123,4 +126,26 @@ const getDemandRead = async (needRegisteredRead) => {
   }
 };
 
-onDemandReads();
+// onDemandReads();
+// getDemandReadData();
+
+module.exports = {
+  requestOnDemandRead: requestOnDemandRead,
+  getDemandReadData: getDemandReadData,
+  // onDemandReads: onDemandReads,
+  getLastOnDemandRequest: getLastOnDemandRequest,
+};
+
+// const onDemandReads = async () => {
+//   const needRegisteredRead = await readRequest();
+//   // await requestOnDemandRead();
+//   // if (needRegisteredRead.length > 0) {
+//   // console.log("read is waiting to be read");
+//   // console.log(needRegisteredRead);
+//   await getDemandReadData(needRegisteredRead);
+//   // } else {
+//   //   console.log("there is no read waiting, trigger a new one");
+//   //   console.log(needRegisteredRead);
+//   //   await requestOnDemandRead();
+//   // }
+// };

@@ -1,0 +1,24 @@
+[33m[nodemon] 2.0.4[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,json[39m
+[32m[nodemon] starting `node index.js`[39m
+Executing (default): SELECT `id`, `trans_id`, `correlationId`, `statusCode`, `statusReason`, `registeredRead`, `readDate`, `createdAt`, `updatedAt` FROM `OnDemandReadRequest` AS `OnDemandReadRequest` WHERE `OnDemandReadRequest`.`statusCode` = 0 AND `OnDemandReadRequest`.`registeredRead` IS NULL;
+there is no read waiting, trigger a new one
+[]
+Starting On Demand Read Request
+ 
+Data added to database
+Executing (default): INSERT INTO `OnDemandReadRequest` (`id`,`correlationId`,`statusCode`,`statusReason`,`createdAt`,`updatedAt`) VALUES (NULL,$1,$2,$3,$4,$5);
+running a task every minute
+Promise { <pending> }
+Executing (default): SELECT `id`, `trans_id`, `correlationId`, `statusCode`, `statusReason`, `registeredRead`, `readDate`, `createdAt`, `updatedAt` FROM `OnDemandReadRequest` AS `OnDemandReadRequest` WHERE `OnDemandReadRequest`.`statusCode` = 0 AND `OnDemandReadRequest`.`registeredRead` IS NULL;
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+Executing (default): SELECT `id`, `trans_id`, `correlationId`, `statusCode`, `statusReason`, `registeredRead`, `readDate`, `createdAt`, `updatedAt` FROM `OnDemandReadRequest` AS `OnDemandReadRequest` WHERE `OnDemandReadRequest`.`statusCode` = 0 AND `OnDemandReadRequest`.`registeredRead` IS NULL;
+there is no read waiting, trigger a new one
+[]
+Starting On Demand Read Request
+ 
+Data added to database
+Executing (default): INSERT INTO `OnDemandReadRequest` (`id`,`correlationId`,`statusCode`,`statusReason`,`createdAt`,`updatedAt`) VALUES (NULL,$1,$2,$3,$4,$5);
